@@ -123,22 +123,16 @@ class TestUrbanRoutes:
         routes_page.set_to(address_to)
         assert routes_page.get_from() == address_from
         assert routes_page.get_to() == address_to
-
         routes_page.click_taxi_button()
         routes_page.click_comfort_button()
-
         phone = data.phone_number
         routes_page.set_phone_number(phone)
-
         routes_page.set_confirmation_code()
-
         card = data.card_number
         code_card = data.card_code
         routes_page.set_payment_method(card, code_card)
-
         message = data.message_for_driver
         routes_page.set_comment(message)
-
         routes_page.get_manta_panuelos()
         routes_page.get_ice_cream()
         routes_page.click_order_taxi_button()
