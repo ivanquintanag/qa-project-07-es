@@ -36,22 +36,22 @@ def retrieve_phone_code(driver) -> str:
 class UrbanRoutesPage: #rutas de página urbanrouters
     from_field = (By.ID, 'from')
     to_field = (By.ID, 'to')
-    taxi_button = (By.XPATH, '//*[@id="root"]/div/div[3]/div[3]/div[1]/div[3]/div[1]/button')
-    comfort_button = (By.XPATH, '/html/body/div/div/div[3]/div[3]/div[2]/div[1]/div[5]')
+    taxi_button_xpath = "//button[@data-testid='taxi-button']" #nueva estructura
+    comfort_button_xpath = "//div[@data-testid='comfort-button-container']//div[@class='button-wrapper']" #nueva estructura
     phone_button = (By.CLASS_NAME, 'np-button')
     phone_field = (By.ID, 'phone')
-    next_button = (By.XPATH, '/html/body/div/div/div[1]/div[2]/div[1]/form/div[2]/button')
+    next_button_xpath = "//form[@data-testid='login-form']//button[@data-testid='next-button']" #nueva estructura
     phone_code = (By.ID, 'code')
-    confirm_button = (By.XPATH, '/html/body/div/div/div[1]/div[2]/div[2]/form/div[2]/button[1]')
+    confirm_button_xpath = "//form[@data-testid='confirmation-form']//button[@data-testid='confirm-button']" #nueva estructura
     payment_button = (By.CSS_SELECTOR, '.pp-button.filled')
     add_card_button = (By.CSS_SELECTOR, '.pp-row.disabled')
     number_card_field = (By.ID, 'number')
-    code_card_field = (By.XPATH, '/html/body/div/div/div[2]/div[2]/div[2]/form/div[1]/div[2]/div[2]/div[2]/input')
-    link_button = (By.XPATH, '/html/body/div/div/div[2]/div[2]/div[2]/form/div[3]/button[1]')
-    close_window_button = (By.XPATH, '/html/body/div/div/div[2]/div[2]/div[1]/button')
+    code_card_field_xpath = "//form[@data-testid='code-card-form']//input[@data-testid='code-card-field']" #nueva estructura
+    link_button_xpath = "//form[@data-testid='link-form']//button[@data-testid='link-button']" #nueva estructura
+    close_window_button_xpath = "//button[@data-testid='close-window-button']" #nureva estructura
     comment_field = (By.ID, 'comment')
     slide_button = (By.CLASS_NAME, 'slider.round')
-    ice_cream = (By.XPATH, '/html/body/div/div/div[3]/div[3]/div[2]/div[2]/div[4]/div[2]/div[3]/div/div[2]/div[1]/div/div[2]/div/div[3]')
+    ice_cream_xpath = "//div[@data-testid='ice-cream-container']//div[@data-testid='flavor-container']//div[@data-testid='chocolate-flavor']"#nueva estructura
     call_taxi_button = (By.CSS_SELECTOR, '.smart-button')
     modal_element = (By.CSS_SELECTOR, '.order-header-content')
 
@@ -66,27 +66,54 @@ class UrbanRoutesPage: #rutas de página urbanrouters
     def set_to(self, to_address):
         self.driver.find_element(*self.to_field).send_keys(to_address)
 
-    def set_phone_number(self, phone): #Se ingresará un número telefónico en ésta área
-        self.driver.find_element(*self.phone_button).click() #se hará click para agregar número
-        self.driver.find_element(*self.phone_field).send_keys(phone) #Se ingresará el número telefónico
-        self.driver.find_element(*self.next_button).click() #botón siguiente
+    def set_phone_number(self, phone):
+        # Ingresar un número telefónico en el área correspondiente
+        self.click_phone_button()  # Hacer clic para agregar un número telefónico
+        self.enter_phone(phone)  # Ingresar el número telefónico
+        self.click_next_button()  # Hacer clic en el botón siguiente
+
+    def click_phone_button(self):
+        # Acciones para hacer clic en el botón para agregar un número telefónico
+        self.driver.find_element(*self.phone_button).click()
+
+    def enter_phone(self, phone):
+        # Acciones para ingresar el número telefónico
+        self.driver.find_element(*self.phone_field).send_keys(phone)
+
+    def click_next_button(self):
+        # Acciones para hacer clic en el botón siguiente
+        self.driver.find_element(*self.next_button).click()
 
     def set_confirmation_code(self): #Para ingresar SMS
         self.driver.find_element(*self.phone_code).send_keys(retrieve_phone_code(self.driver))#INGRESA CÓDIGO
         self.driver.find_element(*self.confirm_button).click() #botón para confirmar código
 
-    def set_payment_method(self, card, code_card): #Se ingresa método de pago
-        self.driver.find_element(*self.payment_button).click() #Click al botón para abrir campo de forma de pago
-        self.driver.find_element(*self.add_card_button).click() #Click en botoón para ingresar una tarjeta de crédito
-        self.driver.find_element(*self.number_card_field).send_keys(card) #Ingreso de número tarjeta
-        self.driver.find_element(*self.code_card_field).send_keys(code_card) #Ingreso de número de código Seguridad
-        self.driver.find_element(*self.code_card_field).send_keys(Keys.TAB) #Confirma código
-        self.driver.find_element(*self.link_button).click() #Click en botón para continuar
-        self.driver.find_element(*self.close_window_button).click() #Cierra ventana
+    def set_payment_method(self, card, code_card):
+        self.open_payment_form()
+        self.add_credit_card(card, code_card)
+        self.confirm_payment()
 
-    def set_comment(self, message): #Ingresar comentario
-        self.driver.find_element(*self.comment_field).send_keys(message) #Click en campo de comentarios
-        return self.driver.find_element(*self.comment_field).get_property('value')
+    def set_payment_method(self, card, code_card):
+        # Coordinar las acciones necesarias para establecer el método de pago
+        self.open_payment_form()  # Abrir el formulario de pago
+        self.add_credit_card(card, code_card)  # Ingresar los detalles de la tarjeta de crédito
+        self.confirm_payment()  # Confirmar el método de pago
+
+    def open_payment_form(self):
+        # Acciones para abrir el formulario de pago
+        self.driver.find_element(*self.payment_button).click()  # Click en el botón de pago
+        self.driver.find_element(*self.add_card_button).click()  # Click en el botón para agregar una tarjeta de crédito
+
+    def add_credit_card(self, card, code_card):
+        # Acciones para ingresar los detalles de la tarjeta de crédito
+        self.driver.find_element(*self.number_card_field).send_keys(card)  # Ingreso del número de la tarjeta
+        self.driver.find_element(*self.code_card_field).send_keys(code_card)  # Ingreso del código de seguridad
+        self.driver.find_element(*self.code_card_field).send_keys(Keys.TAB)  # Confirmar el código de seguridad
+
+    def confirm_payment(self):
+        # Acciones para confirmar el método de pago
+        self.driver.find_element(*self.link_button).click()  # Click en el botón para continuar
+        self.driver.find_element(*self.close_window_button).click()  # Cerrar la ventana de confirmación
 
     def get_manta_panuelos(self): #Se agrega una manta
         self.driver.find_element(*self.slide_button).click() #se clickea el botón para acceder a esa opción
@@ -98,7 +125,7 @@ class UrbanRoutesPage: #rutas de página urbanrouters
     def click_order_taxi_button(self): #Botón con click para solicitar un taxi
         self.driver.find_element(*self.call_taxi_button).click()
 
-    #Esperar a que aparezca la información del conductor en el modal
+
     def wait_for_load_information(self): #espera a que aparezca información
         WebDriverWait(self.driver, 35).until(EC.presence_of_element_located(self.modal_element))
 
@@ -119,20 +146,44 @@ class TestUrbanRoutes:
         routes_page = UrbanRoutesPage(self.driver)
         address_from = data.address_from
         address_to = data.address_to
+
+        # Establecer la dirección de origen y verificar
         routes_page.set_from(address_from)
+        obtained_from = routes_page.get_from()
+        assert obtained_from == address_from, f"Esperado '{address_from}', pero se obtuvo '{obtained_from}'"
+
+        # Establecer la dirección de destino y verificar
         routes_page.set_to(address_to)
-        assert routes_page.get_from() == address_from
-        assert routes_page.get_to() == address_to
+        obtained_to = routes_page.get_to()
+        assert obtained_to == address_to, f"Esperado '{address_to}', pero se obtuvo '{obtained_to}'"
+
+        # Hacer clic en los botones de taxi y confort
         routes_page.click_taxi_button()
         routes_page.click_comfort_button()
+
+        # Establecer el número de teléfono y verificar
         phone = data.phone_number
         routes_page.set_phone_number(phone)
+        obtained_phone = routes_page.get_phone_number()
+        assert obtained_phone == phone, f"Esperado '{phone}', pero se obtuvo '{obtained_phone}'"
+
+        # Establecer el código de confirmación
         routes_page.set_confirmation_code()
+
+        # Establecer el método de pago y verificar
         card = data.card_number
         code_card = data.card_code
         routes_page.set_payment_method(card, code_card)
+        obtained_card = routes_page.get_payment_card()
+        assert obtained_card == card, f"Esperado '{card}', pero se obtuvo '{obtained_card}'"
+
+        # Establecer un comentario y verificar
         message = data.message_for_driver
         routes_page.set_comment(message)
+        obtained_message = routes_page.get_comment()
+        assert obtained_message == message, f"Esperado '{message}', pero se obtuvo '{obtained_message}'"
+
+        # Realizar otras acciones y aserciones según sea necesario
         routes_page.get_manta_panuelos()
         routes_page.get_ice_cream()
         routes_page.click_order_taxi_button()
